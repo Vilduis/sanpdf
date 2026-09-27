@@ -384,3 +384,7 @@ utils/                Escritura binaria, codificaciones y números
 Ver [docs/composicion.md](docs/composicion.md) para la API declarativa,
 [docs/formato-pdf.md](docs/formato-pdf.md) para la base técnica y
 [docs/fase-2.md](docs/fase-2.md) para el diagnóstico, las métricas y el alcance del layout.
+
+## Licencia
+
+[MIT](LICENSE) © 2026 Vilduis

@@ -38,8 +38,16 @@
     "tablas",
     "sin-dependencias"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Vilduis <luisvilders@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vilduis/sanpdf.git"
+  },
+  "homepage": "https://github.com/Vilduis/sanpdf#readme",
+  "bugs": {
+    "url": "https://github.com/Vilduis/sanpdf/issues"
+  },
   "devEngines": {
     "packageManager": {
       "name": "pnpm",
