@@ -1,0 +1,57 @@
+{
+  "name": "sanpdf",
+  "version": "0.3.0",
+  "description": "Generador de PDF en TypeScript con motor propio y sin dependencias: tablas, imágenes JPEG/PNG, códigos QR, enlaces y paginación automática",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "docs"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "test": "pnpm run build && node --test tests/*.test.mjs",
+    "example": "pnpm run build && node examples/api.mjs",
+    "example:carta": "pnpm run build && node examples/carta.mjs",
+    "preview": "node scripts/preview-pdf.mjs",
+    "prepack": "pnpm run build"
+  },
+  "keywords": [
+    "pdf",
+    "pdf-generator",
+    "generador-pdf",
+    "typescript",
+    "factura",
+    "invoice",
+    "qr",
+    "qrcode",
+    "tablas",
+    "sin-dependencias"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.4.2",
+      "onFail": "download"
+    }
+  },
+  "packageManager": "pnpm@12.4.2",
+  "type": "module",
+  "devDependencies": {
+    "jsqr": "^1.4.0",
+    "pdfjs-dist": "^6.3.289",
+    "typescript": "^7.0.2"
+  }
+}
