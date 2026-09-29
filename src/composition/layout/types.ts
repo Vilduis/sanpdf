@@ -6,7 +6,7 @@ import type { RichLayout } from "../../layout/RichText.js";
 import type { Insets } from "../../layout/TextBox.js";
 import type { TextStyle } from "../model.js";
 
-export interface TextCommand {
+interface TextCommand {
   readonly kind: "text";
   readonly x: number;
   readonly y: number;
@@ -15,7 +15,7 @@ export interface TextCommand {
   readonly size: number;
   readonly color: RGBColor;
 }
-export interface NumberCommand {
+interface NumberCommand {
   readonly kind: "number";
   readonly x: number;
   readonly y: number;
@@ -24,7 +24,7 @@ export interface NumberCommand {
   readonly format: string;
   readonly style: TextStyle;
 }
-export interface RectangleCommand {
+interface RectangleCommand {
   readonly kind: "rectangle";
   readonly x: number;
   readonly y: number;
@@ -33,7 +33,7 @@ export interface RectangleCommand {
   readonly fill: RGBColor | undefined;
   readonly border: RGBColor | undefined;
 }
-export interface LineCommand {
+interface LineCommand {
   readonly kind: "line";
   readonly x: number;
   /** Eje de la línea horizontal. */
@@ -42,7 +42,7 @@ export interface LineCommand {
   readonly thickness: number;
   readonly color: RGBColor;
 }
-export interface ImageCommand {
+interface ImageCommand {
   readonly kind: "image";
   readonly x: number;
   readonly y: number;
@@ -50,7 +50,7 @@ export interface ImageCommand {
   readonly height: number;
   readonly image: PDFImage;
 }
-export interface QRCodeCommand {
+interface QRCodeCommand {
   readonly kind: "qr";
   readonly x: number;
   readonly y: number;
@@ -59,7 +59,7 @@ export interface QRCodeCommand {
   readonly color: RGBColor;
   readonly errorCorrection: QRErrorCorrection;
 }
-export interface LinkCommand {
+interface LinkCommand {
   readonly kind: "link";
   readonly x: number;
   readonly y: number;
@@ -67,7 +67,7 @@ export interface LinkCommand {
   readonly height: number;
   readonly url: string;
 }
-export interface BookmarkCommand {
+interface BookmarkCommand {
   readonly kind: "bookmark";
   readonly x: number;
   readonly y: number;
@@ -79,7 +79,7 @@ export interface Block {
   readonly height: number;
   readonly commands: readonly Command[];
 }
-export interface AtomicItem extends Block { readonly kind: "atomic"; readonly path: string; }
+interface AtomicItem extends Block { readonly kind: "atomic"; readonly path: string; }
 export interface TextItem {
   readonly kind: "text";
   readonly path: string;
@@ -91,7 +91,7 @@ export interface TextItem {
   readonly keepTogether: boolean;
   readonly bookmark: string | undefined;
 }
-export interface TableCell {
+interface TableCell {
   readonly x: number;
   readonly width: number;
   readonly item: TextItem;

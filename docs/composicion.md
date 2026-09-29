@@ -1,8 +1,7 @@
 # Componer documentos con SanPDF
 
-La entrada de alto nivel es `PDF.create()`. Los builders describen el documento;
-el layout calcula posiciones y el adaptador de renderizado utiliza el motor PDF.
-La generación no importa módulos de Node.js ni accede a disco o red.
+Usa `PDF.create()` para crear un documento y añadir texto, tablas, imágenes y QR
+sin calcular coordenadas. SanPDF ajusta el contenido y crea páginas cuando hace falta.
 
 ## Páginas y secciones
 
@@ -250,29 +249,37 @@ indivisibles; las de tabla solo se dividen si superan una página.
 Para unir varios textos cortos en un bloque indivisible, se pueden colocar en una
 columna dentro de `row.item()`; ese bloque debe caber en una página.
 
-## Organización interna
+## Ejemplo: factura con imágenes, QR y enlaces
 
-| Módulo | Responsabilidad |
-| --- | --- |
-| `composition/model.ts` | Datos de páginas, nodos, anchos y estilos. |
-| `composition/builders.ts` | Construcción fluida del modelo. |
-| `composition/PDF.ts` | Secciones, snapshots y coordinación de la exportación. |
-| `composition/layout/measure.ts` | Medir nodos reutilizando las métricas existentes. |
-| `composition/layout/blocks.ts` | Transformar y agrupar bloques medidos. |
-| `composition/layout/paginate.ts` | Distribuir bloques y repetir encabezados. |
-| `composition/layout/types.ts` | Contrato de comandos geométricos y errores. |
-| `composition/layout/style.ts` | Resolver estilos y anchos compartidos. |
-| `composition/render.ts` | Adaptar los comandos al motor PDF. |
+En Node.js, coloca `logo.png` junto al script antes de ejecutarlo:
 
-Los builders no dibujan. El layout no escribe objetos PDF. El renderizador no decide
-saltos de página. El motor PDF no conoce los builders. La API de bajo nivel sigue
-disponible y comparte las mismas métricas, validación de páginas y serialización.
+```js
+import { readFileSync } from "node:fs";
+import { writeFile } from "node:fs/promises";
+import { PDF, loadImage, mm } from "sanpdf";
 
-Las pruebas usan PDF.js como lector independiente para verificar texto, posiciones,
-encabezados, numeración y contenido completo; también cubren límites, snapshots,
-errores contextualizados y exportaciones repetidas. Las imágenes y los QR se verifican
-renderizando la página y comprobando sus píxeles; los QR, además, se leen con jsQR.
+// La misma imagen se guarda una sola vez aunque se repita en el encabezado.
+const logo = loadImage(readFileSync("logo.png"));
+const pdf = PDF.create({ title: "Factura F001-123" }).page(page => {
+  page.size("A4").margin(mm(15));
+  page.header().row(row => {
+    row.item(mm(30)).image(logo).width(mm(25));
+    row.item().text("FACTURA ELECTRÓNICA\nF001-123").bold().alignRight();
+  });
+  page.content().column(column => {
+    column.text("Resumen").fontSize(16).bold().color("#1F4788").bookmark();
+    column.text(["Total a pagar: ", { text: "S/ 118.00", style: { bold: true } }]);
+    column.divider();
+    column.text(["Consulta tu comprobante en ",
+      { text: "example.com/comprobantes", link: "https://example.com/comprobantes" }]);
+    column.space(mm(5));
+    column.qrCode("20123456789|01|F001|123|18.00|118.00|2026-09-27|6|20100070970|")
+      .size(mm(30)).alignRight();
+  });
+});
 
-`pnpm test` compila y ejecuta la suite. La configuración TypeScript incluye
-`strict`, `noUnusedLocals` y `noUnusedParameters` para detectar errores de tipos
-y declaraciones locales sin uso durante el desarrollo.
+await writeFile("factura.pdf", pdf.toBytes());
+```
+
+Consulta también el [uso en navegador](navegador.md) y los
+[límites de codificación, fuentes y formatos](limites.md).

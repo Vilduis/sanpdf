@@ -107,7 +107,7 @@ export interface DividerNode {
   color: Color;
   thickness: number;
 }
-export interface SpaceNode {
+interface SpaceNode {
   readonly kind: "space";
   readonly height: number;
 }

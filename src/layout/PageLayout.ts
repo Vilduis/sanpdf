@@ -1,6 +1,6 @@
 import type { PDFDocument } from "../core/PDFDocument.js";
-import { PDFPage } from "../core/PDFPage.js";
-import { PageSizes } from "../core/PageSizes.js";
+import type { PDFPage } from "../core/PDFPage.js";
+import { PageSizes, validatePageSize } from "../core/PageSizes.js";
 import type { PageSize } from "../core/PageSizes.js";
 import { colorOperator, rgb } from "../content/Color.js";
 import type { Color } from "../content/Color.js";
@@ -38,7 +38,7 @@ export class PageLayout {
   constructor(private readonly document: PDFDocument, options: PageLayoutOptions = {}) {
     this.size = Object.freeze([...(options.pageSize ?? PageSizes.A4)]) as PageSize;
     // Valida sin añadir páginas al documento ante opciones incorrectas.
-    new PDFPage(this.size[0], this.size[1]);
+    validatePageSize(this.size[0], this.size[1]);
     this.margins = Object.freeze(resolveInsets(options.margins ?? 40));
     this.width = this.size[0] - this.margins.left - this.margins.right;
     this.contentHeight = this.size[1] - this.margins.top - this.margins.bottom;

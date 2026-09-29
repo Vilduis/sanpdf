@@ -14,7 +14,7 @@ export interface TextRun {
   readonly link: string | undefined;
 }
 
-export interface RunSegment {
+interface RunSegment {
   readonly text: string;
   readonly font: StandardFont;
   readonly color: RGBColor;
@@ -24,7 +24,7 @@ export interface RunSegment {
   readonly width: number;
 }
 
-export interface RichLine {
+interface RichLine {
   readonly segments: readonly RunSegment[];
   /** Inicio de la línea tras aplicar la alineación, relativo al borde izquierdo del bloque. */
   readonly x: number;
