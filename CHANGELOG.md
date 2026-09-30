@@ -1,5 +1,11 @@
 # Historial de cambios
 
+## 1.0.2
+
+- Indicada la versión mínima de Node.js (18) en `engines` y en el README.
+- Eliminado `devEngines`, que impedía usar `npm` dentro del repositorio.
+- Añadida al README una sección de desarrollo.
+
 ## 1.0.1
 
 - Corregidos los enlaces del README para abrir las guías, los ejemplos y la licencia

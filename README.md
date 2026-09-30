@@ -12,6 +12,7 @@ npm install sanpdf
 
 También puedes usar `pnpm add sanpdf`. Paquete **ESM** (`import`) con tipos
 TypeScript incluidos, para Node.js y aplicaciones de navegador compatibles con ESM.
+Requiere Node.js 18 o superior.
 
 ## Inicio rápido — Node.js
 
@@ -74,6 +75,13 @@ pero no emojis ni escrituras fuera de esa codificación.
 
 Todavía no incluye fuentes incrustadas, celdas combinadas (`rowSpan`/`colSpan`),
 lectura o edición de PDF existentes, cifrado ni firmas digitales.
+
+## Desarrollo
+
+```sh
+pnpm install
+pnpm test
+```
 
 ## Licencia
 

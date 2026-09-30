@@ -1,6 +1,6 @@
 {
   "name": "sanpdf",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Generador de PDF en TypeScript con motor propio y sin dependencias: tablas, imágenes JPEG/PNG, códigos QR, enlaces y paginación automática",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -18,6 +18,9 @@
     "docs"
   ],
   "sideEffects": false,
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.json --noEmit",
@@ -48,13 +51,6 @@
   "homepage": "https://github.com/Vilduis/sanpdf#readme",
   "bugs": {
     "url": "https://github.com/Vilduis/sanpdf/issues"
-  },
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "12.4.2",
-      "onFail": "download"
-    }
   },
   "packageManager": "pnpm@12.4.2",
   "type": "module",
