@@ -1,5 +1,10 @@
 # Historial de cambios
 
+## 1.0.1
+
+- Corregidos los enlaces del README para abrir las guías, los ejemplos y la licencia
+  en GitHub, evitando la vista de texto plano al navegar desde npm.io.
+
 ## 1.0.0
 
 Versión inicial estable.

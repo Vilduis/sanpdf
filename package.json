@@ -1,6 +1,6 @@
 {
   "name": "sanpdf",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Generador de PDF en TypeScript con motor propio y sin dependencias: tablas, imágenes JPEG/PNG, códigos QR, enlaces y paginación automática",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

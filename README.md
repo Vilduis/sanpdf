@@ -60,11 +60,11 @@ o descargarlo.
 
 ## Documentación y ejemplos
 
-- [Crear documentos con texto, tablas, imágenes y QR](docs/composicion.md)
-- [Dibujar por coordenadas y medir texto](docs/api-bajo-nivel.md)
-- [Generar y descargar un PDF en el navegador](docs/navegador.md)
-- [Formatos admitidos y límites](docs/limites.md)
-- Ejemplos completos: [pedido](examples/api.mjs) y [carta](examples/carta.mjs).
+- [Crear documentos con texto, tablas, imágenes y QR](https://github.com/Vilduis/sanpdf/blob/main/docs/composicion.md)
+- [Dibujar por coordenadas y medir texto](https://github.com/Vilduis/sanpdf/blob/main/docs/api-bajo-nivel.md)
+- [Generar y descargar un PDF en el navegador](https://github.com/Vilduis/sanpdf/blob/main/docs/navegador.md)
+- [Formatos admitidos y límites](https://github.com/Vilduis/sanpdf/blob/main/docs/limites.md)
+- Ejemplos completos: [pedido](https://github.com/Vilduis/sanpdf/blob/main/examples/api.mjs) y [carta](https://github.com/Vilduis/sanpdf/blob/main/examples/carta.mjs).
 
 ## Alcance actual
 
@@ -77,4 +77,4 @@ lectura o edición de PDF existentes, cifrado ni firmas digitales.
 
 ## Licencia
 
-[MIT](LICENSE) © 2026 Vilduis
+[MIT](https://github.com/Vilduis/sanpdf/blob/main/LICENSE) © 2026 Vilduis
