@@ -8,7 +8,7 @@ import type { TextAlignment } from "../../layout/TextLayout.js";
 import { positive } from "../../utils/numbers.js";
 import { toSpans } from "../model.js";
 import type { CellValue, Node, TableNode, TextNode, TextStyle } from "../model.js";
-import { fullRow, stack, textFragment, translate } from "./blocks.js";
+import { fragmentHeight, fullRow, stack, textFragment, translate } from "./blocks.js";
 import { columnWidths, nonNegative, styleFont, textColor, textOptions } from "./style.js";
 import { LayoutError } from "./types.js";
 import type { Command, FlowItem, TableRow, TextItem } from "./types.js";
@@ -59,11 +59,10 @@ export function measure(node: Node, width: number, inherited: TextStyle, path: s
         const widths = columnWidths(node.columns, width);
         const border = resolveColor(node.border);
         const headerFill = resolveColor(node.headerBackground);
-        const header = node.header
-          ? fullRow(measureTableRow(node.header, node, widths, { ...style, ...node.headerStyle }, `${path}.header`, headerFill, border))
-          : { height: 0, commands: [] };
-        const rows = node.rows.map((cells, index) =>
-          measureTableRow(cells, node, widths, style, `${path}.row[${index + 1}]`, undefined, border));
+        const header = stack(measureTableRows(node.header, node, widths, { ...style, ...node.headerStyle },
+          (first, last) => node.header.length === 1 ? `${path}.header` : `${path}.header[${rowRange(first, last)}]`, headerFill, border)
+          .map(group => ({ kind: "atomic" as const, path: group.path, ...fullRow(group) })));
+        const rows = measureTableRows(node.rows, node, widths, style, (first, last) => `${path}.row[${rowRange(first, last)}]`, undefined, border);
         return [{ kind: "table", path, header, rows }];
       }
       case "image": {
@@ -144,21 +143,76 @@ function measureText(node: TextNode, width: number, style: TextStyle, path: stri
   return { kind: "text", path, width, padding, fill, border, layout, keepTogether: node.keepTogether, bookmark: node.bookmark };
 }
 
-function measureTableRow(cells: readonly CellValue[], table: TableNode, widths: readonly number[], style: TextStyle,
-  path: string, fill: TableRow["fill"], border: TableRow["border"]): TableRow {
-  if (cells.length !== widths.length) {
-    throw new LayoutError(path, `Se esperaban ${widths.length} celdas y se recibieron ${cells.length}.`);
+function measureTableRows(rows: readonly (readonly CellValue[])[], table: TableNode, widths: readonly number[], style: TextStyle,
+  rowPath: (first: number, last: number) => string, fill: TableRow["fill"], border: TableRow["border"]): TableRow[] {
+  const lefts = [0];
+  for (const width of widths) lefts.push(lefts[lefts.length - 1]! + width);
+  // Filas que aún ocupa cada columna, incluida la actual.
+  const occupied = widths.map(() => 0);
+  const groups: TableRow[] = [];
+  let start = 0;
+  let cells: { x: number; width: number; item: TextItem; row: number; rowSpan: number }[] = [];
+  rows.forEach((values, index) => {
+    const path = rowPath(index, index);
+    const simple = !occupied.some(Boolean) && values.every(value => typeof value === "string" || (value.colSpan ?? 1) === 1);
+    const countError = `Se esperaban ${widths.length} celdas y se recibieron ${values.length}.`;
+    let column = 0;
+    values.forEach((value, cellIndex) => {
+      const cell = typeof value === "string" ? { text: value } : value;
+      const cellPath = `${path}.cell[${cellIndex + 1}]`;
+      const colSpan = span(cell.colSpan, "colSpan", cellPath);
+      const rowSpan = span(cell.rowSpan, "rowSpan", cellPath);
+      while (column < widths.length && occupied[column]! > 0) column++;
+      if (column + colSpan > widths.length) {
+        throw simple ? new LayoutError(path, countError) : new LayoutError(cellPath,
+          `La celda no cabe: empieza en la columna ${column + 1}, ocupa ${colSpan} y la tabla tiene ${widths.length}.`);
+      }
+      const blocked = occupied.slice(column, column + colSpan).findIndex(Boolean);
+      if (blocked >= 0) throw new LayoutError(cellPath, `La celda se superpone con la combinada que cubre la columna ${column + blocked + 1}.`);
+      if (index + rowSpan > rows.length) {
+        throw new LayoutError(cellPath, `rowSpan ${rowSpan} supera las filas disponibles (${rows.length - index}).`);
+      }
+      const width = lefts[column + colSpan]! - lefts[column]!;
+      const [item] = measure({
+        kind: "text", spans: toSpans(cell.text), style: cell.style ?? {}, box: { padding: table.padding }, keepTogether: false, pageNumber: false,
+        link: undefined, bookmark: undefined,
+      }, width, style, cellPath) as [TextItem];
+      cells.push({ x: lefts[column]!, width, item, row: index - start, rowSpan });
+      for (let k = column; k < column + colSpan; k++) occupied[k] = rowSpan;
+      column += colSpan;
+    });
+    const covered = occupied.filter(Boolean).length;
+    if (covered !== widths.length) {
+      throw new LayoutError(path, simple ? countError : `Las celdas cubren ${covered} de ${widths.length} columnas.`);
+    }
+    occupied.forEach((remaining, k) => { occupied[k] = remaining - 1; });
+    if (occupied.some(Boolean)) return;
+    groups.push(tableGroup(cells, index - start + 1, rowPath(start, index), fill, border));
+    start = index + 1;
+    cells = [];
+  });
+  return groups;
+}
+
+function rowRange(first: number, last: number): string {
+  return first === last ? `${first + 1}` : `${first + 1}-${last + 1}`;
+}
+
+function span(value: number | undefined, label: string, path: string): number {
+  if (value === undefined) return 1;
+  if (!Number.isInteger(value) || value < 1) throw new LayoutError(path, `${label} debe ser un entero mayor o igual que 1.`);
+  return value;
+}
+
+function tableGroup(cells: TableRow["cells"], count: number, path: string, fill: TableRow["fill"], border: TableRow["border"]): TableRow {
+  const heights = Array.from({ length: count }, () => 0);
+  for (const cell of cells) {
+    if (cell.rowSpan === 1) heights[cell.row] = Math.max(heights[cell.row]!, fragmentHeight(cell.item, cell.item.layout.lines.length));
   }
-  let x = 0;
-  return { path, fill, border, cells: cells.map((value, index) => {
-    const cell = typeof value === "string" ? { text: value } : value;
-    const cellPath = `${path}.cell[${index + 1}]`;
-    const [item] = measure({
-      kind: "text", spans: toSpans(cell.text), style: cell.style ?? {}, box: { padding: table.padding }, keepTogether: false, pageNumber: false,
-      link: undefined, bookmark: undefined,
-    }, widths[index]!, style, cellPath) as [TextItem];
-    const result = { x, width: widths[index]!, item };
-    x += widths[index]!;
-    return result;
-  }) };
+  for (const cell of [...cells].filter(cell => cell.rowSpan > 1).sort((a, b) => a.rowSpan - b.rowSpan)) {
+    const spanned = heights.slice(cell.row, cell.row + cell.rowSpan).reduce((sum, height) => sum + height, 0);
+    const missing = fragmentHeight(cell.item, cell.item.layout.lines.length) - spanned;
+    if (missing > 0) for (let k = cell.row; k < cell.row + cell.rowSpan; k++) heights[k]! += missing / cell.rowSpan;
+  }
+  return { path, cells, heights, fill, border };
 }

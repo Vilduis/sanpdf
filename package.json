@@ -14,8 +14,7 @@
     "dist",
     "src",
     "README.md",
-    "CHANGELOG.md",
-    "docs"
+    "CHANGELOG.md"
   ],
   "sideEffects": false,
   "engines": {

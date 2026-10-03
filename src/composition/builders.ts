@@ -111,7 +111,7 @@ export class ContentBuilder {
   }
   table(build: (table: TableBuilder) => void): void {
     const node: TableNode = {
-      kind: "table", columns: [], header: undefined, rows: [], style: {}, headerStyle: { bold: true },
+      kind: "table", columns: [], header: [], rows: [], style: {}, headerStyle: { bold: true },
       padding: 8, border: rgb(0.75, 0.78, 0.82), headerBackground: rgb(0.94, 0.96, 0.98),
     };
     build(new TableBuilder(node));
@@ -149,7 +149,9 @@ export class RowBuilder {
 export class TableBuilder {
   constructor(private readonly node: TableNode) {}
   columns(values: readonly ColumnWidth[]): this { this.node.columns = [...values]; return this; }
-  header(values: readonly CellValue[]): this { this.node.header = [...values]; return this; }
+  header(values: readonly CellValue[]): this { this.node.header = [[...values]]; return this; }
+  /** Añade otra fila de cabecera. */
+  headerRow(values: readonly CellValue[]): this { this.node.header.push([...values]); return this; }
   row(values: readonly CellValue[]): this { this.node.rows.push([...values]); return this; }
   style(value: TextStyle): this { this.node.style = { ...this.node.style, ...value }; return this; }
   headerStyle(value: TextStyle): this { this.node.headerStyle = { ...this.node.headerStyle, ...value }; return this; }

@@ -52,7 +52,16 @@ export function rowFragment(row: TableRow, starts: readonly number[], counts: re
 }
 
 export function fullRow(row: TableRow): Block {
-  return rowFragment(row, row.cells.map(() => 0), row.cells.map(cell => cell.item.layout.lines.length));
+  const tops = [0];
+  for (const height of row.heights) tops.push(tops[tops.length - 1]! + height);
+  const commands: Command[] = [];
+  for (const cell of row.cells) {
+    const y = tops[cell.row]!;
+    const height = tops[cell.row + cell.rowSpan]! - y;
+    if (height > 0) commands.push({ kind: "rectangle", x: cell.x, y, width: cell.width, height, fill: row.fill, border: row.border });
+    commands.push(...translate(textFragment(cell.item).commands, cell.x, y));
+  }
+  return { height: tops[tops.length - 1]!, commands };
 }
 
 /** Mide un contenedor indivisible; nunca pagina dentro de una fila o cabecera. */

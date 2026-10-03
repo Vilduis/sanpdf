@@ -51,6 +51,9 @@ export type ColumnWidth = number | "*" | { readonly weight: number };
 export interface Cell {
   readonly text: TextContent;
   readonly style?: TextStyle;
+  readonly colSpan?: number;
+  /** Las filas siguientes omiten las posiciones que cubre. */
+  readonly rowSpan?: number;
 }
 export type CellValue = string | Cell;
 
@@ -79,7 +82,7 @@ export interface RowNode {
 export interface TableNode {
   readonly kind: "table";
   columns: ColumnWidth[];
-  header: CellValue[] | undefined;
+  header: CellValue[][];
   rows: CellValue[][];
   style: TextStyle;
   headerStyle: TextStyle;

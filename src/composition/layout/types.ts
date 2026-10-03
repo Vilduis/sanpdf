@@ -95,10 +95,13 @@ interface TableCell {
   readonly x: number;
   readonly width: number;
   readonly item: TextItem;
+  readonly row: number;
+  readonly rowSpan: number;
 }
 export interface TableRow {
   readonly path: string;
   readonly cells: readonly TableCell[];
+  readonly heights: readonly number[];
   readonly fill: RGBColor | undefined;
   readonly border: RGBColor;
 }

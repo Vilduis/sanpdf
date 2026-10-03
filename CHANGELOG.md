@@ -1,5 +1,13 @@
 # Historial de cambios
 
+## Sin publicar
+
+- Celdas combinadas en tablas: `colSpan` y `rowSpan` en `{ text, style, colSpan, rowSpan }`.
+- `headerRow()` añade filas de cabecera para agrupar columnas.
+- Las filas unidas por `rowSpan` se mantienen juntas al paginar.
+- Toda la documentación está ahora en el README; se elimina la carpeta `docs/`.
+- La «API de bajo nivel» pasa a llamarse «API personalizada».
+
 ## 1.0.2
 
 - Indicada la versión mínima de Node.js (18) en `engines` y en el README.

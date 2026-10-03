@@ -71,6 +71,9 @@ class PageFlow {
         this.newPage();
         this.place(header);
         this.place(block);
+      } else if (row.heights.length > 1) {
+        // Un grupo con rowSpan no se divide: sus celdas combinadas cruzarían el corte.
+        this.check(header.height + block.height, `${row.path} (filas combinadas con rowSpan, incluye encabezado)`);
       } else this.splitRow(row, header, first);
     });
   }

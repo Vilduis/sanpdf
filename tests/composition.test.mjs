@@ -221,3 +221,63 @@ test("composición: espacios finales no generan páginas fantasma y una fila imp
   });
   assert.throws(() => row.toBytes(), /necesita .*disponibles/);
 });
+
+test("composición: celdas combinadas con colSpan y rowSpan", async () => {
+  const document = PDF.create().page(page => {
+    page.size([400, 400]).margin(20);
+    page.content().table(table => {
+      table.columns([120, 120, 120]).padding(4);
+      table.header([{ text: "Producto", rowSpan: 2 }, { text: "Trimestre", colSpan: 2, style: { align: "center" } }]);
+      table.headerRow(["Ene", "Feb"]);
+      table.row([{ text: "Zona norte", rowSpan: 2 }, "10", "20"]);
+      table.row(["30", "40"]);
+      table.row([{ text: "Total", colSpan: 2 }, "100"]);
+    });
+  });
+  const [page] = await readPages(document.toBytes());
+  const at = text => page.items.find(item => item.str === text).transform;
+  assert.ok(at("Trimestre")[4] > 140 + 60 && at("Trimestre")[4] < 260);
+  assert.equal(at("Ene")[5], at("Feb")[5]);
+  assert.ok(at("Ene")[5] < at("Trimestre")[5]);
+  assert.ok(Math.abs(at("Ene")[4] - (140 + 4)) < 1 && Math.abs(at("Feb")[4] - (260 + 4)) < 1);
+  assert.ok(Math.abs(at("30")[4] - (140 + 4)) < 1);
+  assert.ok(at("30")[5] < at("10")[5]);
+  assert.equal(at("Zona norte")[5], at("10")[5]);
+  assert.ok(Math.abs(at("100")[4] - (260 + 4)) < 1);
+  assert.ok(at("Total")[5] < at("30")[5]);
+});
+
+test("composición: rowSpan reparte la altura y mantiene el grupo en una página", async () => {
+  const tall = "Línea\n".repeat(6).trim();
+  const document = PDF.create().page(page => {
+    page.size([300, 260]).margin(20);
+    page.content().table(table => {
+      table.columns(["*", "*"]).header(["A", "B"]);
+      for (let i = 1; i <= 4; i++) table.row([`Fila ${i}`, `${i}`]);
+      table.row([{ text: tall, rowSpan: 2 }, "Arriba"]);
+      table.row(["Abajo"]);
+    });
+  });
+  const pages = await readPages(document.toBytes());
+  assert.equal(pages.length, 2);
+  assert.doesNotMatch(pages[0].text, /Arriba|Abajo|Línea/);
+  assert.match(pages[1].text, /^A\s+B\s+Línea.*Arriba.*Abajo/);
+  const items = pages[1].items;
+  const y = text => items.find(item => item.str === text).transform[5];
+  const lines = items.filter(item => item.str === "Línea").map(item => item.transform[5]);
+  assert.ok(y("Abajo") < y("Arriba") && y("Abajo") > Math.min(...lines));
+});
+
+test("composición: errores de celdas combinadas", () => {
+  const fails = (build, pattern) => assert.throws(
+    () => PDF.create().page(page => { page.size([300, 200]).margin(20); page.content().table(build); }).toBytes(), pattern);
+  fails(table => table.columns(["*", "*"]).row([{ text: "X", colSpan: 3 }]), /row\[1\]\.cell\[1\].*no cabe/);
+  fails(table => table.columns(["*", "*"]).row([{ text: "X", colSpan: 0 }]), /colSpan debe ser un entero/);
+  fails(table => table.columns(["*", "*"]).row([{ text: "X", rowSpan: 2 }, "Y"]), /rowSpan 2 supera/);
+  fails(table => table.columns(["*", "*"]).row([{ text: "X", rowSpan: 2 }, "Y"]).row(["A", "B"]), /row\[2\]\.cell\[2\].*no cabe/);
+  fails(table => table.columns(["*", "*", "*"]).row([{ text: "X", colSpan: 2 }]), /row\[1\].*cubren 2 de 3/);
+  fails(table => table.columns(["*", "*"]).header([{ text: "X", rowSpan: 2 }, "Y"]).row(["A", "B"]), /header.*rowSpan 2 supera/);
+  fails(table => table.columns(["*", "*"]).header(["A", "B"])
+    .row([{ text: "Muy alta\n".repeat(20), rowSpan: 2 }, "1"]).row(["2"]),
+  error => error instanceof LayoutError && error.path.includes("row[1-2]") && /rowSpan.*necesita/.test(error.message));
+});
